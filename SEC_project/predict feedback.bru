@@ -1,0 +1,24 @@
+meta {
+  name: predict feedback
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base}}predict/feedback
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "Resturant_Name": "Empire Restaurant",
+    "Cuisine": "North Indian",
+    "Location": "Indiranagar",
+    "City": "Bangalore"
+  }
+}
+
+settings {
+  encodeUrl: true
+}

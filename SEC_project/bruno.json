@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "API_end_points",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

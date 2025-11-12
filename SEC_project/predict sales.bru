@@ -1,0 +1,22 @@
+meta {
+  name: predict sales
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{base}}predict/sales
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "sales_qty": 1500,
+    "Ratings": 4.5
+  }
+}
+
+settings {
+  encodeUrl: true
+}
