@@ -29,20 +29,22 @@ async def lifespan(app: FastAPI):
         fb_enc = joblib.load("feedback_encoder.joblib")
         models["FB_CLASSES"] = fb_enc.categories_[0]
 
-        # --- New Business Logic Stack (Scenarios 1 & 2) ---
-        # Dropped City Model (Scenario 3) as requested
+        # --- Business Logic Stack ---
 
-        # 1. Rating Model
+        # 1. Rating Model (Regressor)
         models["RATING_RF"] = joblib.load("model_ratings.pkl")
 
-        # 2. Sales Model
+        # 2. Sales Model (Regressor)
         models["SALES_RF"] = joblib.load("model_sales.pkl")
 
-        # Shared Encoders for new models
+        # 3. Success Model (Binary Classifier) - NEW ADDITION
+        models["SUCCESS_RF"] = joblib.load("model_success.pkl")
+
+        # Shared Encoders
         models["LE_CITY"] = joblib.load("encoder_city.pkl")
         models["LE_CUISINE"] = joblib.load("encoder_cuisine.pkl")
 
-        print("[+] Models loaded successfully.")
+        print("[+] All systems go. Models loaded.")
     except FileNotFoundError as e:
         print(f"[-] FATAL: Missing artifact. Check your directory. {e}")
     except Exception as e:
@@ -55,7 +57,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Model-API-Hybrid",
-    description="Endpoints for ANN Feedback, DT Sales, RF Ratings & RF Monthly Sales.",
+    description="Endpoints for ANN Feedback, DT Sales, RF Ratings, Monthly Sales & Success Prob.",
     lifespan=lifespan,
 )
 
@@ -74,15 +76,12 @@ class SalesFeatures(BaseModel):
     Ratings: float
 
 
-# Schema for the new Random Forest models
 class MarketFeatures(BaseModel):
     year: int
     month: int
     sales_qty: float
-    sales_amount: float = (
-        0.0  # Optional/Default for Sales prediction where it's the target
-    )
-    Ratings: float = 0.0  # Optional/Default for Rating prediction where it's the target
+    sales_amount: float = 0.0
+    Ratings: float = 0.0
     City: str
     Cuisine: str
 
@@ -135,22 +134,20 @@ async def predict_sales(features: SalesFeatures):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# --- New Random Forest Endpoints ---
+# --- Business Logic RF Endpoints ---
 
 
 @app.post("/predict/rf_rating")
 async def predict_rf_rating(features: MarketFeatures):
-    """Scenario 1: Random Forest Rating Predictor"""
+    """Scenario 1: Predicts Rating based on Sales volume."""
     if "RATING_RF" not in models:
         raise HTTPException(status_code=503, detail="Rating RF Model unavailable")
 
     try:
-        # Encode Inputs
         city_enc = models["LE_CITY"].transform([features.City])[0]
         cuisine_enc = models["LE_CUISINE"].transform([features.Cuisine])[0]
 
-        # Prepare DF for Scenario 1
-        # Training Input: year, month, sales_qty, sales_amount, City_encoded, Cuisine_encoded
+        # Training Order: year, month, sales_qty, sales_amount, City_encoded, Cuisine_encoded
         data = pd.DataFrame(
             [
                 {
@@ -168,13 +165,12 @@ async def predict_rf_rating(features: MarketFeatures):
         return {"rf_rating_prediction": float(prediction[0])}
 
     except Exception as e:
-        # Likely encoding error if City/Cuisine is new
         raise HTTPException(status_code=500, detail=f"RF Rating Error: {str(e)}")
 
 
 @app.post("/predict/rf_monthly_sales")
 async def predict_rf_monthly_sales(features: MarketFeatures):
-    """Scenario 2: Random Forest Sales Predictor"""
+    """Scenario 2: Predicts Sales Amount based on Rating."""
     if "SALES_RF" not in models:
         raise HTTPException(status_code=503, detail="Sales RF Model unavailable")
 
@@ -182,8 +178,7 @@ async def predict_rf_monthly_sales(features: MarketFeatures):
         city_enc = models["LE_CITY"].transform([features.City])[0]
         cuisine_enc = models["LE_CUISINE"].transform([features.Cuisine])[0]
 
-        # Prepare DF for Scenario 2
-        # Training Input: year, month, sales_qty, Ratings, City_encoded, Cuisine_encoded
+        # Training Order: year, month, sales_qty, Ratings, City_encoded, Cuisine_encoded
         data = pd.DataFrame(
             [
                 {
@@ -202,6 +197,44 @@ async def predict_rf_monthly_sales(features: MarketFeatures):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"RF Sales Error: {str(e)}")
+
+
+@app.post("/predict/rf_success_prob")
+async def predict_rf_success_prob(features: MarketFeatures):
+    """Scenario 4: Predicts Success Probability (%) based on all stats."""
+    if "SUCCESS_RF" not in models:
+        raise HTTPException(status_code=503, detail="Success RF Model unavailable")
+
+    try:
+        city_enc = models["LE_CITY"].transform([features.City])[0]
+        cuisine_enc = models["LE_CUISINE"].transform([features.Cuisine])[0]
+
+        # Training Order: Ratings, sales_qty, sales_amount, City_encoded, Cuisine_encoded, year, month
+        data = pd.DataFrame(
+            [
+                {
+                    "Ratings": features.Ratings,
+                    "sales_qty": features.sales_qty,
+                    "sales_amount": features.sales_amount,
+                    "City_encoded": city_enc,
+                    "Cuisine_encoded": cuisine_enc,
+                    "year": features.year,
+                    "month": features.month,
+                }
+            ]
+        )
+
+        # Get probability of class 1 (Success)
+        probs = models["SUCCESS_RF"].predict_proba(data)[0]
+        success_prob = probs[1] * 100  # Convert to percentage
+
+        return {
+            "success_probability_percentage": round(float(success_prob), 2),
+            "is_successful": bool(success_prob > 50),
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Success Model Error: {str(e)}")
 
 
 if __name__ == "__main__":

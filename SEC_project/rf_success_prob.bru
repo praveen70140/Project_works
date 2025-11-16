@@ -1,0 +1,28 @@
+meta {
+  name: rf_success_prob
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{base}}predict/rf_success_prob
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "year": 2024,
+    "month": 10,
+    "sales_qty": 15.0,
+    "sales_amount": 850.0,
+    "Ratings": 4.0,
+    "City": "Bangalore",
+    "Cuisine": "Italian"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
