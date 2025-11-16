@@ -1,0 +1,27 @@
+meta {
+  name: rf_monthly_sales
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{base}}predict/rf_monthly_sales
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "year": 2024,
+    "month": 12,
+    "sales_qty": 45.0,
+    "Ratings": 4.2,
+    "City": "Bangalore",
+    "Cuisine": "Fast Food"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

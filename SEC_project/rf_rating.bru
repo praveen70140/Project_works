@@ -1,0 +1,27 @@
+meta {
+  name: rf_rating
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{base}}predict/rf_rating
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "year": 2025,
+    "month": 7,
+    "sales_qty": 25.0,
+    "sales_amount": 1500.0,
+    "City": "Kolkata",
+    "Cuisine": "North Indian"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
