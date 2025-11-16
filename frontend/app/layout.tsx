@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
-import { Gabarito } from "next/font/google";
 import "./globals.css";
+import localFont from "next/font/local";
 import { Providers } from "./providers";
 
-const gabarito = Gabarito({
-  variable: "--font-gabarito",
-  subsets: ["latin"],
+const gabarito = localFont({
+  src: "../public/fonts/Gabarito-variable.ttf",
 });
 
 export const metadata: Metadata = {
