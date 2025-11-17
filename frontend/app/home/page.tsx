@@ -40,19 +40,22 @@ const HomePage = () => {
           selectedKey={tabState}
           onSelectionChange={(e) => setTabState(String(e))}
         >
-        <Tab key="form" title="Form">
-          <Card>
-            <CardBody>
+          <Tab key="form" title="Form">
+            <Card>
+              <CardBody>
                 <MainForm onSubmit={onSubmit} />
-            </CardBody>
-          </Card>
-        </Tab>
-        <Tab key="music" title="Result" isDisabled={true}>
-          <Card>
-            <CardBody>Work in progress</CardBody>
-          </Card>
-        </Tab>
-      </Tabs>
+              </CardBody>
+            </Card>
+          </Tab>
+          <Tab key="result" title="Result" isDisabled={!isSubmitted}>
+            <Card>
+              <CardBody>
+                <Result />
+              </CardBody>
+            </Card>
+          </Tab>
+        </Tabs>
+      </FormProvider>
     </div>
   );
 };
