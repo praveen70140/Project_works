@@ -1,0 +1,26 @@
+meta {
+  name: every month of every city
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{base}}predict/market_matrix
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "year": 2025,
+    "sales_qty": 1500.0,
+    "sales_amount": 75000.50,
+    "Ratings": 4.8,
+    "Cuisine": "North Indian"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

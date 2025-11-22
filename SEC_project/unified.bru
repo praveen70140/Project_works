@@ -1,0 +1,30 @@
+meta {
+  name: unified
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{base}}predict/unified
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "Resturant_Name": "Empire Restaurant",
+    "Cuisine": "Italian",
+    "Location": "Indiranagar",
+    "City": "Delhi",
+    "year": 2025,
+    "month": 10,
+    "sales_qty": 1200.0,
+    "sales_amount": 45000.50,
+    "Ratings": 4.8
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
