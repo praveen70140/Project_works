@@ -1,7 +1,17 @@
 "use client";
 import { Controller, useFormContext } from "react-hook-form";
 import { mainFormData } from "../types/main-form-data";
-import { Button, DatePicker, Input } from "@heroui/react";
+import {
+  Button,
+  DatePicker,
+  Input,
+  Select,
+  SelectItem,
+  Slider,
+} from "@heroui/react";
+import citiesList from "@/app/data/cities.json";
+import cuisineList from "@/app/data/cuisines.json";
+import { CalendarIcon } from "lucide-react";
 
 interface Props {
   onSubmit: () => void;
@@ -28,11 +38,16 @@ const MainForm = ({ onSubmit }: Props) => {
             label="Restaurant Name"
             {...register("restaurantName", { required: true })}
           />
-          <Input
-            type="text"
-            label="Cuisine"
+          <Select
+            isVirtualized
+            label={"Cuisine"}
+            placeholder="Select..."
             {...register("cuisine", { required: true })}
-          />
+          >
+            {cuisineList.map((cuisine: string) => (
+              <SelectItem key={cuisine}>{cuisine}</SelectItem>
+            ))}
+          </Select>
         </div>
         <div className="flex space-x-2">
           <Input
@@ -40,41 +55,65 @@ const MainForm = ({ onSubmit }: Props) => {
             label="Location"
             {...register("location", { required: true })}
           />
-          <Input
-            type="text"
-            label="City"
+
+          <Select
+            isVirtualized
+            label={"City"}
+            placeholder="Select..."
             {...register("city", { required: true })}
-          />
+          >
+            {citiesList.map((city: string) => (
+              <SelectItem key={city}>{city}</SelectItem>
+            ))}
+          </Select>
         </div>
 
         <div className="flex space-x-2">
-          <Input
-            type="number"
-            label="Sales Amount"
-            {...register("salesAmount", {
-              required: true,
-              valueAsNumber: true,
-              min: 0,
-            })}
+          <Controller
+            control={control}
+            name="salesAmount"
+            rules={{ required: true }}
+            render={({ field }) => (
+              <Slider
+                defaultValue={5000}
+                label="Sales Amount"
+                maxValue={10000}
+                minValue={0}
+                step={100}
+                {...field}
+              />
+            )}
           />
-          <Input
-            type="number"
-            label="Sales Quantity"
-            {...register("salesQuantity", {
-              required: true,
-              valueAsNumber: true,
-              min: 0,
-            })}
+
+          <Controller
+            control={control}
+            name="salesQuantity"
+            rules={{ required: true }}
+            render={({ field }) => (
+              <Slider
+                defaultValue={5000}
+                label="Sales Quantity"
+                maxValue={10000}
+                minValue={0}
+                step={100}
+                {...field}
+              />
+            )}
           />
+
           <Controller
             name="date"
             control={control}
             rules={{ required: true }}
             render={({ field }) => (
-              <DatePicker label="Date of establishment" {...field} />
+              <DatePicker
+                endContent={<CalendarIcon />}
+                label="Date of establishment"
+                {...field}
+              />
             )}
           />
-          <Input
+          {/* <Input
             type="number"
             label="Rating"
             {...register("rating", {
@@ -83,6 +122,22 @@ const MainForm = ({ onSubmit }: Props) => {
               min: 0,
               max: 5,
             })}
+          /> */}
+
+          <Controller
+            control={control}
+            name="rating"
+            rules={{ required: true }}
+            render={({ field }) => (
+              <Slider
+                defaultValue={5000}
+                label="Rating"
+                maxValue={5}
+                minValue={1}
+                step={0.1}
+                {...field}
+              />
+            )}
           />
         </div>
         <Button className="mt-3 w-10" size="lg" type="submit" color="primary">
