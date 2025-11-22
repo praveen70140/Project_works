@@ -1,18 +1,19 @@
 "use client";
 
 import { Card, CardBody, Tab, Tabs } from "@heroui/react";
-import React, { useState } from "react";
+import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { mainFormData } from "../types/main-form-data";
 import MainForm from "../components/main-form";
 import Result from "../components/result";
 import { parseDate } from "@internationalized/date";
+import ThemeToggle from "../components/theme-toggle";
 
 const HomePage = () => {
   const methods = useForm<mainFormData>({
     defaultValues: {
       city: "Bengaluru",
-      cuisine: "Indian",
+      cuisine: "Fast Food",
       location: "Indiranagar",
       date: parseDate("2025-11-17"),
       rating: 5.0,
@@ -34,6 +35,9 @@ const HomePage = () => {
   return (
     <div className="p-3 flex flex-col space-y-4">
       <h2 className="text-primary-600 text-2xl font-semibold">Welcome!</h2>
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
       <FormProvider {...methods}>
         <Tabs
           aria-label="Steps"

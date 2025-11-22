@@ -14,7 +14,7 @@ export type cityRecommendationApi = {
 };
 export type monthRecommendationApi = {
   top_3_month_recommendations: {
-    month: string;
+    month: number;
     probability_percent: number;
   }[];
 };
