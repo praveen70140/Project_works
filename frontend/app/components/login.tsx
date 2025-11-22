@@ -1,3 +1,5 @@
+"use client";
+
 import {
   addToast,
   Button,
@@ -77,7 +79,6 @@ const Login = () => {
             <Input
               variant="bordered"
               size="md"
-              className=""
               label="Email"
               type="email"
               {...register("email", { required: true })}
@@ -85,7 +86,6 @@ const Login = () => {
             <Input
               variant="bordered"
               size="md"
-              className=""
               label="Password"
               type={isVisible ? "text" : "password"}
               {...register("password", { required: true })}

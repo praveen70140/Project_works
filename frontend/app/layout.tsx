@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import "./globals.css";
 import localFont from "next/font/local";
+import "./globals.css";
 import { Providers } from "./providers";
 
 const gabarito = localFont({
@@ -18,7 +18,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${gabarito.className} antialiased`}>
         <Providers>{children}</Providers>
       </body>
