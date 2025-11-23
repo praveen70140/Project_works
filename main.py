@@ -7,6 +7,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from dotenv import load_dotenv
+from fastapi.middleware.cors import CORSMiddleware
 
 # --- ENV/Warning Mute ---
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
@@ -73,6 +74,15 @@ app = FastAPI(
     title="Model-API-Hybrid",
     description="Endpoints for ANN Feedback, DT Sales, RF Ratings, Monthly Sales & Success Prob + Gemini Insight.",
     lifespan=lifespan,
+)
+origins = ["http://localhost:3000", "*"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows OPTIONS, POST, GET, etc.
+    allow_headers=["*"],
 )
 
 
