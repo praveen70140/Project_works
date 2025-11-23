@@ -20,5 +20,25 @@ export type monthRecommendationApi = {
 };
 export type healthApi = {
   status: string;
-  moels_loaded: string[];
+  models_loaded: string[];
+};
+type marketMatrix = {
+  market_matrix: {
+    [k: string]: {
+      [l: string]: number;
+    };
+  };
+  city_global_probabilities: {
+    [k: string]: number;
+  };
+};
+
+export type unifiedApi = {
+  feedback_prediction: feedbackApi;
+  high_sales_prediction: salesApi;
+  rf_rating_prediction: ratingApi;
+  rf_monthly_sales: monthlySalesApi;
+  rf_success_prob: successProbabilityApi;
+  market_matrix: marketMatrix;
+  gemini_recommendation: string;
 };

@@ -38,7 +38,7 @@ const UserDetails = () => {
 
   return (
     <Card className="col-span-6">
-      <CardBody className="flex flex-col justify-center items-center">
+      <CardBody className="flex flex-col items-center">
         <h3 className="self-start">User Details</h3>
         <div className="grid grid-cols-6 w-full gap-2">
           <UserDetailsCard

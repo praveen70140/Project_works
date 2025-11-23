@@ -113,16 +113,6 @@ const MainForm = ({ onSubmit }: Props) => {
               />
             )}
           />
-          {/* <Input
-            type="number"
-            label="Rating"
-            {...register("rating", {
-              required: true,
-              valueAsNumber: true,
-              min: 0,
-              max: 5,
-            })}
-          /> */}
 
           <Controller
             control={control}

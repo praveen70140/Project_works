@@ -1,62 +1,85 @@
-import { cityRecommendationApi } from "@/app/types/api-types";
+import { cityRecommendationApi, unifiedApi } from "@/app/types/api-types";
 import { mainFormData } from "@/app/types/main-form-data";
+import { months } from "@/app/utils/time";
 import { Card, CardBody, CircularProgress } from "@heroui/react";
 import { ResponsiveBar } from "@nivo/bar";
 import { useFormContext } from "react-hook-form";
 import useSWR from "swr";
+import customTheme from "@/app/data/theme.json";
 
-const fetcher = ([url, payload]: [url: string, payload: mainFormData]) =>
-  fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      year: payload.date.year,
-      month: payload.date.month,
-      sales_qty: payload.salesQuantity,
-      sales_amount: payload.salesAmount,
-      Ratings: payload.rating,
-      Cuisine: payload.cuisine,
-    }),
-  }).then((r) => r.json());
+const MAX_TOP_CITY_COUNT = 5;
+const CityChart = ({ data }: { data: unifiedApi }) => {
+  const { city_global_probabilities, market_matrix } = data.market_matrix;
 
-const CityChart = () => {
-  const { getValues } = useFormContext<mainFormData>();
-  const payload = getValues();
-  const { data, error, isLoading } = useSWR<cityRecommendationApi>(
-    [`${process.env.NEXT_PUBLIC_API_URL}/predict/rf_city_recommend`, payload],
-    fetcher
-  );
+  let chartData: { [k: string]: string | number }[] = [];
+  for (const city in city_global_probabilities) {
+    const prob = city_global_probabilities[city];
+    if (prob > 0) {
+      chartData.push({ City: city, Probability: prob });
+    }
+  }
 
-  if (isLoading)
-    return (
-      <div>
-        <CircularProgress />
-      </div>
-    );
-  if (!data) return <div>Not found</div>;
+  chartData = chartData
+    .sort((a, b) => (b.Probability as number) - (a.Probability as number))
+    .filter((_, i) => i < MAX_TOP_CITY_COUNT)
+    .map((e) => ({ ...e, Probability: (e.Probability as number) / 100 }));
 
-  const chartData = data.top_3_recommendations.map((e) => ({
-    City: e.city,
-    Probability: e.probability_percent,
-  }));
+  for (const city in market_matrix) {
+    const i = chartData.findIndex((e) => e.City === city);
+    if (i !== -1) {
+      const labelPercentage = chartData[i].Probability as number;
+      const cityData = market_matrix[city];
+
+      let sum = 0;
+      for (const monthCount in cityData) {
+        sum += cityData[monthCount];
+      }
+
+      let newChartElement: { [k: string]: string | number } = {
+        City: city,
+      };
+      for (let i = 0; i < 12; i++) {
+        const innerPercentage =
+          (cityData[`Month_${i + 1}`] * labelPercentage) / sum;
+
+        newChartElement[months[i]] = innerPercentage;
+      }
+      chartData[i] = newChartElement;
+    }
+  }
 
   return (
     <Card className="col-span-3">
       <CardBody className="flex flex-col justify-center items-center">
-        <h3 className="self-start absolute top-3">City Recommendations</h3>
+        <h3 className="self-start mb-5">City Recommendations</h3>
 
         <div className="w-full h-96">
           <ResponsiveBar /* or Bar for fixed dimensions */
             data={chartData}
-            keys={["Probability"]}
+            keys={[...months]}
             indexBy="City"
+            valueFormat={">-.1%"}
             labelSkipWidth={12}
-            colors={{ scheme: "accent" }}
+            enableTotals={true}
+            enableLabel={false}
+            legends={[
+              {
+                dataFrom: "keys",
+                anchor: "bottom-right",
+                direction: "column",
+                translateX: 120,
+                itemsSpacing: 3,
+                itemWidth: 100,
+                itemHeight: 16,
+              },
+            ]}
+            colors={{ scheme: "spectral" }}
             labelSkipHeight={12}
+            theme={customTheme}
             axisBottom={{ legend: "City", legendOffset: 32 }}
-            axisLeft={{ legend: "Probability (%age)", legendOffset: -40 }}
+            axisLeft={{ legend: "Probability", legendOffset: -40 }}
             margin={{ top: 50, right: 130, bottom: 50, left: 60 }}
-          />{" "}
+          />
         </div>
       </CardBody>
     </Card>
